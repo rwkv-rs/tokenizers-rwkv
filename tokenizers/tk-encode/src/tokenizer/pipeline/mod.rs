@@ -3,6 +3,8 @@ use std::iter::Enumerate;
 use std::sync::Arc;
 use std::vec::IntoIter;
 
+#[cfg(feature = "rwkv-trie")]
+use crate::models::rwkv_trie::{RwkvTrie, RwkvTrieScratch};
 #[cfg(feature = "unigram")]
 use crate::models::unigram::{Unigram, UnigramScratch};
 #[cfg(feature = "wordlevel")]
@@ -1021,6 +1023,8 @@ pub trait Model {
 )]
 pub enum PipelineModel {
     BPE(PipelineBPE),
+    #[cfg(feature = "rwkv-trie")]
+    RwkvTrie(RwkvTrie),
     #[cfg(feature = "unigram")]
     Unigram(Unigram),
     #[cfg(feature = "wordlevel")]
@@ -1034,6 +1038,8 @@ impl PipelineModel {
     pub fn id_to_token(&self, id: u32) -> Option<String> {
         match self {
             Self::BPE(model) => model.id_to_token(id),
+            #[cfg(feature = "rwkv-trie")]
+            Self::RwkvTrie(model) => model.id_to_token(id),
             #[cfg(feature = "unigram")]
             Self::Unigram(model) => model.id_to_token(id),
             #[cfg(feature = "wordlevel")]
@@ -1059,6 +1065,10 @@ impl Model for PipelineModel {
     ) -> Result<()> {
         match (self, scratch) {
             (Self::BPE(model), PipelineModelScratch::BPE(scratch)) => {
+                model.tokenize_pipeline(sequence, scratch, output)
+            }
+            #[cfg(feature = "rwkv-trie")]
+            (Self::RwkvTrie(model), PipelineModelScratch::RwkvTrie(scratch)) => {
                 model.tokenize_pipeline(sequence, scratch, output)
             }
             #[cfg(feature = "unigram")]
@@ -1088,6 +1098,10 @@ impl Model for PipelineModel {
             (Self::BPE(model), PipelineModelScratch::BPE(scratch)) => {
                 model.tokenize_spans(chunk, spans, scratch, output)
             }
+            #[cfg(feature = "rwkv-trie")]
+            (Self::RwkvTrie(model), PipelineModelScratch::RwkvTrie(scratch)) => {
+                model.tokenize_spans(chunk, spans, scratch, output)
+            }
             #[cfg(feature = "unigram")]
             (Self::Unigram(model), PipelineModelScratch::Unigram(scratch)) => {
                 model.tokenize_spans(chunk, spans, scratch, output)
@@ -1107,6 +1121,8 @@ impl Model for PipelineModel {
     fn init_scratch(&self) -> Self::Scratch {
         match self {
             Self::BPE(bpe) => PipelineModelScratch::BPE(bpe.init_scratch()),
+            #[cfg(feature = "rwkv-trie")]
+            Self::RwkvTrie(model) => Self::Scratch::RwkvTrie(model.init_scratch()),
             #[cfg(feature = "wordlevel")]
             Self::WordLevel(_) => Self::Scratch::WordLevel(()),
             #[cfg(feature = "wordpiece")]
@@ -1120,6 +1136,8 @@ impl Model for PipelineModel {
 #[derive(Default)]
 pub enum PipelineModelScratch {
     BPE(BpeScratch),
+    #[cfg(feature = "rwkv-trie")]
+    RwkvTrie(RwkvTrieScratch),
     #[cfg(feature = "wordlevel")]
     WordLevel(()),
     #[cfg(feature = "wordpiece")]

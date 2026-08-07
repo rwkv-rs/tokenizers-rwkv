@@ -76,6 +76,13 @@ fn read_vocab_object(cfg: &Json<'_>) -> Result<Vocab> {
     Ok(vocab)
 }
 
+#[cfg(feature = "rwkv-trie")]
+pub(super) fn read_rwkv_trie(cfg: &Json<'_>) -> Result<tk_encode::models::rwkv_trie::RwkvTrie> {
+    // The vocabulary is the ByteLevel spelling of the byte strings, which is what the model
+    // matches; there is nothing else to configure.
+    tk_encode::models::rwkv_trie::RwkvTrie::new(read_vocab_object(cfg)?)
+}
+
 #[cfg(feature = "wordpiece")]
 pub(super) fn read_wordpiece(cfg: &Json<'_>) -> Result<tk_encode::models::wordpiece::WordPiece> {
     let vocab = read_vocab_object(cfg)?;

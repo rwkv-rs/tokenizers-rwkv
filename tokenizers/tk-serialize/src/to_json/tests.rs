@@ -266,9 +266,22 @@ const WORDPIECE: &[(&str, &str)] = &[
 #[cfg(not(feature = "wordpiece"))]
 const WORDPIECE: &[(&str, &str)] = &[];
 
+#[cfg(feature = "rwkv-trie")]
+#[rustfmt::skip]
+const RWKVTRIE: &[(&str, &str)] = &[
+    ("model", r#"{"type": "RwkvTrie", "vocab": {"a": 1, "b": 2, "ab": 3, "<|endoftext|>": 0}}"#),
+];
+#[cfg(not(feature = "rwkv-trie"))]
+const RWKVTRIE: &[(&str, &str)] = &[];
+
 #[test]
 fn components_round_trip_to_their_canonical_spelling() {
-    for (slot, spelling) in IDEMPOTENT.iter().chain(BERT).chain(WORDPIECE) {
+    for (slot, spelling) in IDEMPOTENT
+        .iter()
+        .chain(BERT)
+        .chain(WORDPIECE)
+        .chain(RWKVTRIE)
+    {
         assert_eq!(
             written(slot, spelling),
             json(spelling),
@@ -278,6 +291,34 @@ fn components_round_trip_to_their_canonical_spelling() {
     for (slot, input, expected) in REWRITTEN {
         assert_eq!(written(slot, input), json(expected), "{slot}: {input}");
     }
+}
+
+/// The RWKV World shape end to end: the ids it produces, the text they decode to, and a written
+/// config that reads back to the same ids.
+#[cfg(feature = "rwkv-trie")]
+#[test]
+fn rwkv_trie_encodes_decodes_and_writes() {
+    let text = config(&[
+        (
+            "model",
+            r#"{"type": "RwkvTrie", "vocab": {"a": 1, "b": 2, "ab": 3, "<|endoftext|>": 0}}"#,
+        ),
+        // The byte map is inverted on decode; nothing else in the pipeline does anything.
+        ("decoder", r#"{"type": "ByteLevel"}"#),
+    ]);
+    let tokenizer = from_json(&text).expect("the config reads");
+    assert_eq!(
+        ids(&tokenizer, "abab", &EncodeOptions::no_specials()),
+        vec![3, 3]
+    );
+    assert_eq!(tokenizer.decode(&[3, 3], false).unwrap(), "abab");
+
+    let written = rewrite(&text);
+    let restored = from_json(&written).expect("the written config reads");
+    assert_eq!(
+        ids(&restored, "abab", &EncodeOptions::no_specials()),
+        vec![3, 3]
+    );
 }
 
 /// Padding is state the tokenizer carries rather than a component, so no other test here would

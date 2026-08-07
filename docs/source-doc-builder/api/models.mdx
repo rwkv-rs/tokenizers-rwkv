@@ -23,6 +23,27 @@ other bindings. See [`REQUIRED_FOR_V1.md`](https://github.com/huggingface/tokeni
 
 <code>tokenizers.models.Unigram</code>
 
+## RwkvTrie
+
+`RwkvTrie` implements RWKV World's greedy longest match over UTF-8 bytes. Its
+vocabulary keys use the Hugging Face ByteLevel alphabet, so a `tokenizer.json`
+names it with no normalizer and no pre-tokenizer, and `ByteLevel` is configured
+only as the decoder:
+
+```json
+{
+  "version": "2.0",
+  "normalizer": null,
+  "pre_tokenizer": null,
+  "decoder": { "type": "ByteLevel" },
+  "model": { "type": "RwkvTrie", "vocab": { "<ByteLevel spelling>": 1 } }
+}
+```
+
+Token ID 0 is retained for explicit end-of-document boundaries but is never
+produced by normal text encoding. BlinkDL's Python-literal vocabulary text file
+must be converted to a ByteLevel JSON vocabulary before use.
+
 ## WordLevel[[tokenizers.models.WordLevel]]
 
 <code>tokenizers.models.WordLevel</code>

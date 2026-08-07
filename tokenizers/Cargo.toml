@@ -57,12 +57,14 @@ default = [
   "serialize",
   "normalizers",
   "bpe",
+  "rwkv-trie",
   "unigram",
   "wordpiece",
   "wordlevel",
   "unicode-scripts",
 ]
 bpe = ["tk-serialize/bpe", "tk-train?/bpe"]
+rwkv-trie = ["tk-serialize/rwkv-trie"]
 unigram = ["tk-serialize/unigram", "tk-train?/unigram"]
 wordpiece = ["tk-serialize/wordpiece", "tk-train?/wordpiece"]
 wordlevel = ["tk-serialize/wordlevel", "tk-train?/wordlevel"]

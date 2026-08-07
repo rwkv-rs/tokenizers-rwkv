@@ -92,6 +92,10 @@ WordPiece  { "type", "unk_token":str, "continuing_subword_prefix":str,
              "max_input_chars_per_word":int, "vocab": {token: id} }
 
 WordLevel  { "type", "unk_token":str, "vocab": {token: id} }
+
+RwkvTrie   { "type", "vocab": {token: id} }        ← every key is the ByteLevel spelling of the
+                                                    bytes it matches; no pre-tokenizer, `ByteLevel`
+                                                    as the decoder
 ```
 
 ## TemplateProcessing

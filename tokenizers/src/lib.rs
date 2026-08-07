@@ -46,6 +46,7 @@
 //! | Feature | Default | What it turns on |
 //! |---|---|---|
 //! | `bpe` | yes | The BPE model. With `train`, the BPE trainer too. |
+//! | `rwkv-trie` | yes | The `RwkvTrie` model: RWKV World's greedy longest match over ByteLevel bytes. |
 //! | `unigram` | yes | The Unigram model. With `train`, the Unigram trainer too. |
 //! | `wordpiece` | yes | The WordPiece model. With `train`, the WordPiece trainer too. That trainer runs the BPE one, so it also turns on `bpe`. |
 //! | `wordlevel` | yes | The WordLevel model. With `train`, the WordLevel trainer too. |

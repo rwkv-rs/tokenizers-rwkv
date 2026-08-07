@@ -39,6 +39,8 @@ mod tests;
 use self::added_tokens::read_added_tokens;
 use self::decoders::read_decoder;
 use self::model::read_bpe;
+#[cfg(feature = "rwkv-trie")]
+use self::model::read_rwkv_trie;
 #[cfg(feature = "unigram")]
 use self::model::read_unigram;
 #[cfg(feature = "wordlevel")]
@@ -145,6 +147,16 @@ fn from_json_value(doc: &Json<'_>) -> Result<PipelineTokenizer> {
                 },
             )
         }
+        #[cfg(feature = "rwkv-trie")]
+        "RwkvTrie" => build(
+            doc,
+            normalizers,
+            pre_tokenizer,
+            read_rwkv_trie(model_cfg)?,
+            tk_encode::models::rwkv_trie::RwkvTrie::get_vocab_size,
+            tk_encode::models::rwkv_trie::RwkvTrie::token_to_id,
+            |model| Ok(PipelineModel::RwkvTrie(model)),
+        ),
         #[cfg(feature = "wordpiece")]
         "WordPiece" => build(
             doc,
@@ -179,8 +191,8 @@ fn from_json_value(doc: &Json<'_>) -> Result<PipelineTokenizer> {
         // because from here the two are indistinguishable: the arm simply is not compiled.
         other => Err(format!(
             "the slim JSON reader cannot read the `{other}` model: either it is not a model \
-             type this crate knows, or its feature (`unigram`, `wordpiece`, `wordlevel`) is \
-             off in this build"
+             type this crate knows, or its feature (`rwkv-trie`, `unigram`, `wordpiece`, \
+             `wordlevel`) is off in this build"
         )
         .into()),
     }
@@ -248,6 +260,7 @@ fn read_role_to_token(cfg: Option<&Json<'_>>) -> Result<BTreeMap<String, String>
 fn model_kind(cfg: &Json<'_>) -> Result<&'static str> {
     Ok(match cfg.type_tag() {
         Some("BPE") => "BPE",
+        Some("RwkvTrie") => "RwkvTrie",
         Some("Unigram") => "Unigram",
         Some("WordPiece") => "WordPiece",
         Some("WordLevel") => "WordLevel",

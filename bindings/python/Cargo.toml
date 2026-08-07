@@ -28,6 +28,8 @@ tk = { package = "tokenizers", path = "../../tokenizers", default-features = fal
   "parallelism",
   "normalizers",
   "bpe",
+  # The RWKV World vocabulary model, read from a `tokenizer.json`.
+  "rwkv-trie",
   "unigram",
   "wordpiece",
   "wordlevel",

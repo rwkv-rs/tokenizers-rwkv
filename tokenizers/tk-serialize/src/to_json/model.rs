@@ -35,6 +35,15 @@ pub(super) fn write_model(out: &mut Out, model: &PipelineModel) -> Result<()> {
             out.arr_close();
             out.obj_close();
         }
+        #[cfg(feature = "rwkv-trie")]
+        PipelineModel::RwkvTrie(rwkv_trie) => {
+            out.obj_open();
+            out.type_tag("RwkvTrie");
+            // The vocabulary *is* the byte map: every key is the ByteLevel spelling of the bytes
+            // it matches, so this needs no `byte_level` flag beside it.
+            write_vocab_object(out, rwkv_trie.vocab());
+            out.obj_close();
+        }
         #[cfg(feature = "unigram")]
         PipelineModel::Unigram(unigram) => {
             out.obj_open();

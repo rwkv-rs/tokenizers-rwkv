@@ -17,6 +17,7 @@ tokenizers = { path = "../../tokenizers", default-features = false, features = [
   "parallelism",
   "normalizers",
   "bpe",
+  "rwkv-trie",
   "unigram",
   "wordpiece",
   "wordlevel",

@@ -106,6 +106,29 @@ const WORDLEVEL: &[(&str, &str, &str, &[u32])] = &[
 #[cfg(not(feature = "wordlevel"))]
 const WORDLEVEL: &[(&str, &str, &str, &[u32])] = &[];
 
+/// The shape a hand-written config takes: `version`, `model`, `decoder`, nothing else. Absent slots
+/// are absent rather than `null`, which is what the converter and the RWKV bench emit.
+#[cfg(feature = "rwkv-trie")]
+#[test]
+fn rwkv_trie_reads_a_minimal_config() {
+    let text = r#"{"version": "2.0", "decoder": {"type": "ByteLevel"},
+        "model": {"type": "RwkvTrie", "vocab": {"a": 1, "b": 2, "ab": 3}}}"#;
+    assert_eq!(ids(text, "abab"), [3, 3]);
+    assert_eq!(
+        from_json(text).unwrap().decode(&[3, 3], false).unwrap(),
+        "abab"
+    );
+}
+
+#[cfg(feature = "rwkv-trie")]
+#[rustfmt::skip]
+const RWKVTRIE: &[(&str, &str, &str, &[u32])] = &[
+    // Leftmost-longest over the ByteLevel bytes, with no pre-tokenizer in the way.
+    ("model", r#"{"type": "RwkvTrie", "vocab": {"a": 1, "b": 2, "ab": 3}}"#, "abab", &[3, 3]),
+];
+#[cfg(not(feature = "rwkv-trie"))]
+const RWKVTRIE: &[(&str, &str, &str, &[u32])] = &[];
+
 #[test]
 fn every_component_encodes_what_it_should() {
     for (slot, json, text, expected) in ENCODES
@@ -113,6 +136,7 @@ fn every_component_encodes_what_it_should() {
         .chain(UNIGRAM)
         .chain(WORDPIECE)
         .chain(WORDLEVEL)
+        .chain(RWKVTRIE)
     {
         assert_eq!(
             ids(&config(&[(slot, json)]), text),
