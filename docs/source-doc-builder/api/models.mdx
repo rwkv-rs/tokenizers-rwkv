@@ -42,7 +42,11 @@ only as the decoder:
 
 Token ID 0 is retained for explicit end-of-document boundaries but is never
 produced by normal text encoding. BlinkDL's Python-literal vocabulary text file
-must be converted to a ByteLevel JSON vocabulary before use.
+can be converted to ByteLevel JSON with:
+
+```bash
+python temp/convert_rwkv_vocab.py rwkv_vocab_v20230424.txt rwkv-vocab.json
+```
 
 ## WordLevel[[tokenizers.models.WordLevel]]
 
