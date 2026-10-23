@@ -246,8 +246,8 @@ jobs:
         run: cargo semver-checks --package tokenizers
 
   # The Clippy job above runs --all-features, which is blind to the failure mode
-  # this job exists for: tk-encode's per-model features (unigram / wordpiece /
-  # wordlevel) and `normalizers` are `cfg` gates on enum variants and match arms,
+  # this job exists for: tk-encode's per-model features (bpe / rwkv-trie / unigram /
+  # wordpiece / wordlevel) and `normalizers` are `cfg` gates on enum variants and match arms,
   # so a build with only SOME of them can stop compiling while both the default
   # and the all-features builds stay green. That has already happened twice —
   # a match that gained an unreachable `_ => ()` arm (a warning, hence a
@@ -312,14 +312,14 @@ jobs:
       - name: Clippy every feature combination
         run: |
           cargo hack --package tk-encode --feature-powerset --depth 2 \
-            --include-features bpe,unigram,wordpiece,wordlevel,normalizers \
+            --include-features bpe,rwkv-trie,unigram,wordpiece,wordlevel,normalizers \
             clippy --all-targets -- -D warnings
 
       # Compiling is most of the gate, so the tests run per single feature rather than per pair.
       - name: Test each feature on its own
         run: |
           cargo hack --package tk-encode --each-feature \
-            --include-features bpe,unigram,wordpiece,wordlevel,normalizers \
+            --include-features bpe,rwkv-trie,unigram,wordpiece,wordlevel,normalizers \
             test --lib
 
       - name: Clippy and test every tk-train feature combination

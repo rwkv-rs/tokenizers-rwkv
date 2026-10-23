@@ -106,6 +106,33 @@ const WORDLEVEL: &[(&str, &str, &str, &[u32])] = &[
 #[cfg(not(feature = "wordlevel"))]
 const WORDLEVEL: &[(&str, &str, &str, &[u32])] = &[];
 
+/// Id 0 as the document boundary, end to end: declared as a special added token, it encodes to 0
+/// rather than going through the model, and `skip_special_tokens` drops it on the way back.
+#[cfg(feature = "rwkv-trie")]
+#[test]
+fn rwkv_trie_end_of_document_special_token() {
+    let text = config(&[
+        (
+            "model",
+            r#"{"type": "RwkvTrie", "vocab": {"a": 1, "b": 2, "ab": 3, "<|endoftext|>": 0}}"#,
+        ),
+        ("decoder", r#"{"type": "ByteLevel"}"#),
+        (
+            "added_tokens",
+            r#"[{"id": 0, "content": "<|endoftext|>", "single_word": false, "lstrip": false,
+                "rstrip": false, "normalized": false, "special": true}]"#,
+        ),
+    ]);
+    let tokenizer = from_json(&text).expect("the config reads");
+    let encoded = ids(&text, "<|endoftext|>ab");
+    assert_eq!(encoded, [0, 3]);
+    assert_eq!(
+        tokenizer.decode(&encoded, false).unwrap(),
+        "<|endoftext|>ab"
+    );
+    assert_eq!(tokenizer.decode(&encoded, true).unwrap(), "ab");
+}
+
 /// The shape a hand-written config takes: `version`, `model`, `decoder`, nothing else. Absent slots
 /// are absent rather than `null`, which is what the converter and the RWKV bench emit.
 #[cfg(feature = "rwkv-trie")]

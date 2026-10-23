@@ -239,6 +239,14 @@ mod tests {
             Error::EmptyVocabulary
         ));
         assert!(matches!(
+            *RwkvTrie::new(AHashMap::from([(String::new(), 1)]))
+                .unwrap_err()
+                .downcast::<Error>()
+                .unwrap(),
+            // daachorse would take an empty pattern as "match at every byte boundary".
+            Error::EmptyToken
+        ));
+        assert!(matches!(
             *RwkvTrie::new(AHashMap::from([("🙂".to_string(), 1)]))
                 .unwrap_err()
                 .downcast::<Error>()

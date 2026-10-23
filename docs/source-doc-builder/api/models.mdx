@@ -26,9 +26,8 @@ other bindings. See [`REQUIRED_FOR_V1.md`](https://github.com/huggingface/tokeni
 ## RwkvTrie
 
 `RwkvTrie` implements RWKV World's greedy longest match over UTF-8 bytes. Its
-vocabulary keys use the Hugging Face ByteLevel alphabet, so a `tokenizer.json`
-names it with no normalizer and no pre-tokenizer, and `ByteLevel` is configured
-only as the decoder:
+vocabulary keys use the Hugging Face ByteLevel alphabet, so the config names no
+normalizer and no pre-tokenizer, and `ByteLevel` is the only other component:
 
 ```json
 {
@@ -38,6 +37,17 @@ only as the decoder:
   "decoder": { "type": "ByteLevel" },
   "model": { "type": "RwkvTrie", "vocab": { "<ByteLevel spelling>": 1 } }
 }
+```
+
+There is no model class to construct under `tokenizers.models`: the model is read
+from a canonical `tokenizer.json`.
+
+```python
+from tokenizers import Tokenizer
+
+tokenizer = Tokenizer.from_file("tokenizer.json")
+encoding = tokenizer.encode("Hello, 世界", add_special_tokens=False)
+assert tokenizer.decode(encoding.ids) == "Hello, 世界"
 ```
 
 Token ID 0 is retained for explicit end-of-document boundaries but is never

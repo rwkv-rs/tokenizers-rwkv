@@ -6,9 +6,9 @@ Example:
         rwkv_vocab_v20230424.txt \
         rwkv-vocab.json
 
-The output is accepted by ``tokenizers.models.RwkvTrie``. Token ID 0 is
-reserved for ``<|endoftext|>`` and is added when the source file does not
-define it.
+The output is the ``vocab`` object of a canonical ``tokenizer.json`` whose model
+is ``{"type": "RwkvTrie", ...}``. Token ID 0 is reserved for
+``<|endoftext|>`` and is added when the source file does not define it.
 """
 
 from __future__ import annotations
